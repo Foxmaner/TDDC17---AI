@@ -34,6 +34,9 @@ class MyAgentState
 	public static final int WEST = 3;
 	public int agent_direction = EAST;
 	
+	//Egna variabler!
+	public int start_sequence_nr = 0;
+	
 	MyAgentState()
 	{
 		for (int i=0; i < world.length; i++)
@@ -185,6 +188,34 @@ class MyAgentProgram implements AgentProgram {
 	    
 	    state.printWorldDebug();
 	    
+	    if(state.start_sequence_nr==0) {
+	    	if(state.agent_direction==state.NORTH) {
+				if(bump){
+					state.start_sequence_nr++;
+					return NoOpAction.NO_OP;
+				}
+	    		state.agent_last_action=state.ACTION_MOVE_FORWARD;
+	    		return LIUVacuumEnvironment.ACTION_MOVE_FORWARD;
+	    	}else {
+	    		state.agent_direction = ((state.agent_direction+1) % 4);
+	    		state.agent_last_action=state.ACTION_TURN_RIGHT;
+		    	return LIUVacuumEnvironment.ACTION_TURN_RIGHT;
+	    	}
+	    }
+	    else if(state.start_sequence_nr == 1){
+
+			if(state.agent_direction==state.EAST) {
+				if(bump){
+					state.start_sequence_nr++;
+					return NoOpAction.NO_OP;
+				}
+				state.agent_last_action=state.ACTION_MOVE_FORWARD;
+	    		return LIUVacuumEnvironment.ACTION_MOVE_FORWARD;
+	    	}
+			state.agent_direction = ((state.agent_direction+1) % 4);
+			state.agent_last_action=state.ACTION_TURN_RIGHT;
+			return LIUVacuumEnvironment.ACTION_TURN_RIGHT;
+		}
 	    
 	    // Next action selection based on the percept value
 	    if (dirt)
