@@ -178,7 +178,7 @@ class MyAgentProgram implements AgentProgram {
 				break;
 			}
 	    }
-	    if (dirt)
+	    else if (dirt)
 	    	state.updateWorld(state.agent_x_position,state.agent_y_position,state.DIRT);
 	    else
 	    	state.updateWorld(state.agent_x_position,state.agent_y_position,state.CLEAR);
@@ -197,8 +197,9 @@ class MyAgentProgram implements AgentProgram {
 	    {
 	    	if (bump)
 	    	{
-	    		state.agent_last_action=state.ACTION_NONE;
-		    	return NoOpAction.NO_OP;
+	    		state.agent_last_action=state.ACTION_TURN_LEFT;
+		    	return LIUVacuumEnvironment.ACTION_TURN_LEFT;
+		    	
 	    	}
 	    	else
 	    	{
