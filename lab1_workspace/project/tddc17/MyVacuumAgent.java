@@ -198,8 +198,9 @@ class MyAgentProgram implements AgentProgram {
 	    else
 	    {
 	    	if(firstBump.getX()==state.agent_x_position && firstBump.getY()==state.agent_y_position && state.agent_last_action == state.ACTION_MOVE_FORWARD) {
-	    		state.agent_last_action=state.ACTION_NONE;
-	    		return NoOpAction.NO_OP;
+	    		state.agent_last_action=state.ACTION_TURN_RIGHT;
+	    		state.agent_direction = ((state.agent_direction+1) % 4);
+	    		return LIUVacuumEnvironment.ACTION_TURN_RIGHT;
 	    	}
 	    		
 	    	if (bump)
@@ -217,6 +218,7 @@ class MyAgentProgram implements AgentProgram {
 	    	{
 	    		state.agent_last_action=state.ACTION_MOVE_FORWARD;
 	    		return LIUVacuumEnvironment.ACTION_MOVE_FORWARD;
+	    		
 	    	}
 	    }
 	}
