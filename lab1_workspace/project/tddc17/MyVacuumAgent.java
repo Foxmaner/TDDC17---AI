@@ -97,13 +97,14 @@ class MyAgentState
 
 class MyAgentProgram implements AgentProgram {
 
-	private int initnialRandomActions = 10;
+	private int initnialRandomActions = 0;
 	private Random random_generator = new Random();
 	
 	// Here you can define your variables!
-	public int iterationCounter = 100;
+	public int iterationCounter = 5;
 	public MyAgentState state = new MyAgentState();
 	Point2D firstBump = new Point2D.Double();
+	Point2D currentPosition = new Point2D.Double();
 	
 	// moves the Agent to a random start position
 	// uses percepts to update the Agent position - only the position, other percepts are ignored
@@ -127,9 +128,39 @@ class MyAgentProgram implements AgentProgram {
 		return LIUVacuumEnvironment.ACTION_MOVE_FORWARD;
 	}
 	
+	private int[] returnNeighbors(Point2D currentPosition2,int orientation) {
+		int[] returnValue = {0,0,0,0};
+		int xpos = (int)currentPosition2.getX();
+		int ypos = (int)currentPosition2.getY();
+		if(orientation == MyAgentState.NORTH) {
+			returnValue[0] = state.world[xpos][ypos+1];
+			returnValue[1] = state.world[xpos+1][ypos];
+			returnValue[2] = state.world[xpos][ypos-1];
+			returnValue[3] = state.world[xpos-1][ypos];
+			
+		}else if(orientation == MyAgentState.EAST){
+			returnValue[0] = state.world[xpos+1][ypos];
+			returnValue[1] = state.world[xpos][ypos-1];
+			returnValue[2] = state.world[xpos-1][ypos];
+			returnValue[3] = state.world[xpos][ypos+1];
+		}else if(orientation == MyAgentState.SOUTH){
+			returnValue[0] = state.world[xpos][ypos-1];
+			returnValue[1] = state.world[xpos-1][ypos];
+			returnValue[2] = state.world[xpos][ypos+1];
+			returnValue[3] = state.world[xpos+1][ypos];
+		}else if(orientation == MyAgentState.WEST){
+			returnValue[0] = state.world[xpos-1][ypos];
+			returnValue[1] = state.world[xpos][ypos+1];
+			returnValue[2] = state.world[xpos+1][ypos];
+			returnValue[3] = state.world[xpos][ypos-1];
+		}
+		return returnValue;
+	}
+	
 	
 	@Override
 	public Action execute(Percept percept) {
+		currentPosition.setLocation(state.agent_x_position,state.agent_y_position);
 		
 		// DO NOT REMOVE this if condition!!!
     	if (initnialRandomActions>0) {
@@ -194,6 +225,7 @@ class MyAgentProgram implements AgentProgram {
 	    	System.out.println("DIRT -> choosing SUCK action!");
 	    	state.agent_last_action=state.ACTION_SUCK;
 	    	return LIUVacuumEnvironment.ACTION_SUCK;
+	    	
 	    } 
 	    else
 	    {
@@ -209,13 +241,18 @@ class MyAgentProgram implements AgentProgram {
 	    			firstBump.setLocation(state.agent_x_position,state.agent_y_position);
 	    		}
 				
-				state.agent_direction +=4;
 				state.agent_direction = ((state.agent_direction+1) % 4);
 	    		state.agent_last_action=state.ACTION_TURN_RIGHT;
 	    		return LIUVacuumEnvironment.ACTION_TURN_RIGHT;
 	    	}
 	    	else
 	    	{
+	    		System.out.println(Integer.toString(returnNeighbors(currentPosition,state.agent_direction)[0]));
+	    		if(returnNeighbors(currentPosition,state.agent_direction)[0]==state.CLEAR&&state.agent_last_action==state.ACTION_MOVE_FORWARD) {
+	    			state.agent_direction = ((state.agent_direction+1) % 4);
+		    		state.agent_last_action=state.ACTION_TURN_RIGHT;
+		    		return LIUVacuumEnvironment.ACTION_TURN_RIGHT;
+	    		}
 	    		state.agent_last_action=state.ACTION_MOVE_FORWARD;
 	    		return LIUVacuumEnvironment.ACTION_MOVE_FORWARD;
 	    		
