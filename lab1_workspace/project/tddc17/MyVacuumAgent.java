@@ -7,6 +7,7 @@ import aima.core.agent.AgentProgram;
 import aima.core.agent.Percept;
 import aima.core.agent.impl.*;
 
+import java.awt.geom.Point2D;
 import java.util.Random;
 
 class MyAgentState
@@ -33,9 +34,6 @@ class MyAgentState
 	public static final int SOUTH = 2;
 	public static final int WEST = 3;
 	public int agent_direction = EAST;
-	
-	//Egna variabler!
-	public int start_sequence_nr = 0;
 	
 	MyAgentState()
 	{
@@ -103,8 +101,9 @@ class MyAgentProgram implements AgentProgram {
 	private Random random_generator = new Random();
 	
 	// Here you can define your variables!
-	public int iterationCounter = 10;
+	public int iterationCounter = 100;
 	public MyAgentState state = new MyAgentState();
+	Point2D firstBump = new Point2D.Double();
 	
 	// moves the Agent to a random start position
 	// uses percepts to update the Agent position - only the position, other percepts are ignored
@@ -181,41 +180,13 @@ class MyAgentProgram implements AgentProgram {
 				break;
 			}
 	    }
-	    else if (dirt)
+	    if (dirt)
 	    	state.updateWorld(state.agent_x_position,state.agent_y_position,state.DIRT);
 	    else
 	    	state.updateWorld(state.agent_x_position,state.agent_y_position,state.CLEAR);
 	    
 	    state.printWorldDebug();
 	    
-	    if(state.start_sequence_nr==0) {
-	    	if(state.agent_direction==state.NORTH) {
-				if(bump){
-					state.start_sequence_nr++;
-					return NoOpAction.NO_OP;
-				}
-	    		state.agent_last_action=state.ACTION_MOVE_FORWARD;
-	    		return LIUVacuumEnvironment.ACTION_MOVE_FORWARD;
-	    	}else {
-	    		state.agent_direction = ((state.agent_direction+1) % 4);
-	    		state.agent_last_action=state.ACTION_TURN_RIGHT;
-		    	return LIUVacuumEnvironment.ACTION_TURN_RIGHT;
-	    	}
-	    }
-	    else if(state.start_sequence_nr == 1){
-
-			if(state.agent_direction==state.EAST) {
-				if(bump){
-					state.start_sequence_nr++;
-					return NoOpAction.NO_OP;
-				}
-				state.agent_last_action=state.ACTION_MOVE_FORWARD;
-	    		return LIUVacuumEnvironment.ACTION_MOVE_FORWARD;
-	    	}
-			state.agent_direction = ((state.agent_direction+1) % 4);
-			state.agent_last_action=state.ACTION_TURN_RIGHT;
-			return LIUVacuumEnvironment.ACTION_TURN_RIGHT;
-		}
 	    
 	    // Next action selection based on the percept value
 	    if (dirt)
@@ -226,11 +197,21 @@ class MyAgentProgram implements AgentProgram {
 	    } 
 	    else
 	    {
+	    	if(firstBump.getX()==state.agent_x_position && firstBump.getY()==state.agent_y_position && state.agent_last_action == state.ACTION_MOVE_FORWARD) {
+	    		state.agent_last_action=state.ACTION_NONE;
+	    		return NoOpAction.NO_OP;
+	    	}
+	    		
 	    	if (bump)
 	    	{
-	    		state.agent_last_action=state.ACTION_TURN_LEFT;
-		    	return LIUVacuumEnvironment.ACTION_TURN_LEFT;
-		    	
+	    		if(firstBump.getX()==0 && firstBump.getY()==0) {
+	    			firstBump.setLocation(state.agent_x_position,state.agent_y_position);
+	    		}
+				
+				state.agent_direction +=4;
+				state.agent_direction = ((state.agent_direction+1) % 4);
+	    		state.agent_last_action=state.ACTION_TURN_RIGHT;
+	    		return LIUVacuumEnvironment.ACTION_TURN_RIGHT;
 	    	}
 	    	else
 	    	{
@@ -246,3 +227,4 @@ public class MyVacuumAgent extends AbstractAgent {
     	super(new MyAgentProgram());
 	}
 }
+ 
