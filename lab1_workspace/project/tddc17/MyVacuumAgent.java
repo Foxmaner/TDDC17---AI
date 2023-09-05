@@ -102,6 +102,10 @@ class MyAgentProgram implements AgentProgram {
 	// Here you can define your variables!
 	public int iterationCounter = 10;
 	public MyAgentState state = new MyAgentState();
+	
+	//********************************************************************
+	//Own variables
+	private int sequenceNumber = 0;
 
 	// moves the Agent to a random start position
 	// uses percepts to update the Agent position - only the position, other percepts are ignored
@@ -124,7 +128,78 @@ class MyAgentProgram implements AgentProgram {
 		state.agent_last_action=state.ACTION_MOVE_FORWARD;
 		return LIUVacuumEnvironment.ACTION_MOVE_FORWARD;
 	}
+	
+	// *******************************************************************************************
+	// OWN help functions
+			private int[] returnNeighbors(int xpos, int ypos,int orientation) {
+				int[] returnValue = {0,0,0,0};
+				if(orientation == MyAgentState.NORTH) {
+					returnValue[0] = state.world[xpos][ypos+1];
+					returnValue[1] = state.world[xpos+1][ypos];
+					returnValue[2] = state.world[xpos][ypos-1];
+					returnValue[3] = state.world[xpos-1][ypos];
+				}else if(orientation == MyAgentState.EAST){
+					returnValue[0] = state.world[xpos+1][ypos];
+					returnValue[1] = state.world[xpos][ypos-1];
+					returnValue[2] = state.world[xpos-1][ypos];
+					returnValue[3] = state.world[xpos][ypos+1];
+				}else if(orientation == MyAgentState.SOUTH){
+					returnValue[0] = state.world[xpos][ypos-1];
+					returnValue[1] = state.world[xpos-1][ypos];
+					returnValue[2] = state.world[xpos][ypos+1];
+					returnValue[3] = state.world[xpos+1][ypos];
+				}else if(orientation == MyAgentState.WEST){
+					returnValue[0] = state.world[xpos-1][ypos];
+					returnValue[1] = state.world[xpos][ypos+1];
+					returnValue[2] = state.world[xpos+1][ypos];
+					returnValue[3] = state.world[xpos][ypos-1];
+				}
 
+				return returnValue;
+
+			}
+			private int[] returnNeighborsAbs(int xpos1, int ypos1) {
+				int[] returnValue = {0,0,0,0};
+
+				returnValue[0] = state.world[xpos1][ypos1+1];
+				returnValue[1] = state.world[xpos1+1][ypos1];
+				returnValue[2] = state.world[xpos1][ypos1-1];
+				returnValue[3] = state.world[xpos1-1][ypos1];
+
+				return returnValue;
+
+			}
+
+			private Action turnRight() {
+				state.agent_direction = ((state.agent_direction+1) % 4);
+				state.agent_last_action = state.ACTION_TURN_RIGHT;
+				return LIUVacuumEnvironment.ACTION_TURN_RIGHT;
+
+			}
+
+			private Action turnLeft() {
+				state.agent_direction = ((state.agent_direction-1) % 4);
+				state.agent_last_action = state.ACTION_TURN_LEFT;
+				return LIUVacuumEnvironment.ACTION_TURN_LEFT;
+			}
+
+			private Action goForward() {
+				state.agent_last_action=state.ACTION_MOVE_FORWARD;
+				return LIUVacuumEnvironment.ACTION_MOVE_FORWARD;
+			} 
+			
+			private Action startupSeq() {
+				return goForward();
+			}
+			
+			private Action cleaningSeq() {
+				return goForward();
+			}
+			
+			private Action returnHomeSeq() {
+				return goForward();
+			}
+	
 
 	@Override
 	public Action execute(Percept percept) {
@@ -143,67 +218,6 @@ class MyAgentProgram implements AgentProgram {
 
 		// This example agent program will update the internal agent state while only moving forward.
 		// START HERE - code below should be modified!
-		// *******************************************************************************************
-		// OWN help functions
-		private int[] returnNeighbors(int xpos, int ypos,int orientation) {
-			int[] returnValue = {0,0,0,0};
-			if(orientation == MyAgentState.NORTH) {
-				returnValue[0] = state.world[xpos][ypos+1];
-				returnValue[1] = state.world[xpos+1][ypos];
-				returnValue[2] = state.world[xpos][ypos-1];
-				returnValue[3] = state.world[xpos-1][ypos];
-			}else if(orientation == MyAgentState.EAST){
-				returnValue[0] = state.world[xpos+1][ypos];
-				returnValue[1] = state.world[xpos][ypos-1];
-				returnValue[2] = state.world[xpos-1][ypos];
-				returnValue[3] = state.world[xpos][ypos+1];
-			}else if(orientation == MyAgentState.SOUTH){
-				returnValue[0] = state.world[xpos][ypos-1];
-				returnValue[1] = state.world[xpos-1][ypos];
-				returnValue[2] = state.world[xpos][ypos+1];
-				returnValue[3] = state.world[xpos+1][ypos];
-			}else if(orientation == MyAgentState.WEST){
-				returnValue[0] = state.world[xpos-1][ypos];
-				returnValue[1] = state.world[xpos][ypos+1];
-				returnValue[2] = state.world[xpos+1][ypos];
-				returnValue[3] = state.world[xpos][ypos-1];
-			}
-
-			return returnValue;
-
-		}
-		private int[] returnNeighborsAbs(int xpos, int ypos) {
-			int[] returnValue = {0,0,0,0};
-
-			returnValue[0] = state.world[xpos][ypos+1];
-			returnValue[1] = state.world[xpos+1][ypos];
-			returnValue[2] = state.world[xpos][ypos-1];
-			returnValue[3] = state.world[xpos-1][ypos];
-
-			return returnValue;
-
-		}
-
-		private Action turnRight() {
-			state.agent_direction = ((state.agent_direction+1) % 4);
-			state.agent_last_action = state.ACTION_TURN_RIGHT;
-			return LIUVacuumEnvironment.ACTION_TURN_RIGHT;
-
-		}
-
-
-
-		private Action turnLeft() {
-			state.agent_direction = ((state.agent_direction-1) % 4);
-			state.agent_last_action = state.ACTION_TURN_LEFT;
-			return LIUVacuumEnvironment.ACTION_TURN_LEFT;
-		}
-
-		private Action goForward() {
-			state.agent_last_action=state.ACTION_MOVE_FORWARD;
-			return LIUVacuumEnvironment.ACTION_MOVE_FORWARD;
-		} 
-
 		//*********************************************************************
 		//Back to boilerplate
 
@@ -260,15 +274,15 @@ class MyAgentProgram implements AgentProgram {
 		} 
 		else
 		{
-			if (bump)
-			{
+			if(sequenceNumber == 0) {
+				return startupSeq();
+			}else if(sequenceNumber == 1) {
+				return cleaningSeq();
+			}else if(sequenceNumber == 2) {
+				return returnHomeSeq();
+			}else {
 				state.agent_last_action=state.ACTION_NONE;
 				return NoOpAction.NO_OP;
-			}
-			else
-			{
-				state.agent_last_action=state.ACTION_MOVE_FORWARD;
-				return LIUVacuumEnvironment.ACTION_MOVE_FORWARD;
 			}
 		}
 	}
