@@ -100,7 +100,7 @@ class MyAgentProgram implements AgentProgram {
 	private Random random_generator = new Random();
 
 	// Here you can define your variables!
-	public int iterationCounter = 10;
+	public int iterationCounter = 100;
 	public MyAgentState state = new MyAgentState();
 	
 	//********************************************************************
@@ -134,9 +134,9 @@ class MyAgentProgram implements AgentProgram {
 			private int[] returnNeighbors(int xpos, int ypos,int orientation) {
 				int[] returnValue = {0,0,0,0};
 				if(orientation == MyAgentState.NORTH) {
-					returnValue[0] = state.world[xpos][ypos+1];
+					returnValue[0] = state.world[xpos][ypos-1];
 					returnValue[1] = state.world[xpos+1][ypos];
-					returnValue[2] = state.world[xpos][ypos-1];
+					returnValue[2] = state.world[xpos][ypos+1];
 					returnValue[3] = state.world[xpos-1][ypos];
 				}else if(orientation == MyAgentState.EAST){
 					returnValue[0] = state.world[xpos+1][ypos];
@@ -144,9 +144,9 @@ class MyAgentProgram implements AgentProgram {
 					returnValue[2] = state.world[xpos-1][ypos];
 					returnValue[3] = state.world[xpos][ypos+1];
 				}else if(orientation == MyAgentState.SOUTH){
-					returnValue[0] = state.world[xpos][ypos-1];
+					returnValue[0] = state.world[xpos][ypos+1];
 					returnValue[1] = state.world[xpos-1][ypos];
-					returnValue[2] = state.world[xpos][ypos+1];
+					returnValue[2] = state.world[xpos][ypos-1];
 					returnValue[3] = state.world[xpos+1][ypos];
 				}else if(orientation == MyAgentState.WEST){
 					returnValue[0] = state.world[xpos-1][ypos];
@@ -178,7 +178,7 @@ class MyAgentProgram implements AgentProgram {
 			}
 
 			private Action turnLeft() {
-				state.agent_direction = ((state.agent_direction-1) % 4);
+				state.agent_direction = ((state.agent_direction+3) % 4);
 				state.agent_last_action = state.ACTION_TURN_LEFT;
 				return LIUVacuumEnvironment.ACTION_TURN_LEFT;
 			}
@@ -188,8 +188,19 @@ class MyAgentProgram implements AgentProgram {
 				return LIUVacuumEnvironment.ACTION_MOVE_FORWARD;
 			} 
 			
-			private Action startupSeq() {
-				return goForward();
+			private Action startupSeq(Boolean bump) {
+				if(returnNeighbors(state.agent_x_position,state.agent_y_position,state.agent_direction)[0] == state.CLEAR) {
+					sequenceNumber++;
+					state.agent_last_action=state.ACTION_NONE;
+					System.out.println("KASDKASDKJASDKJASDHKJASDKJDHASK");
+					return NoOpAction.NO_OP;
+				}
+				else if(bump) {
+					return turnRight();
+				}else {
+					return goForward();
+				}
+				
 			}
 			
 			private Action cleaningSeq() {
@@ -275,7 +286,7 @@ class MyAgentProgram implements AgentProgram {
 		else
 		{
 			if(sequenceNumber == 0) {
-				return startupSeq();
+				return startupSeq(bump);
 			}else if(sequenceNumber == 1) {
 				return cleaningSeq();
 			}else if(sequenceNumber == 2) {
