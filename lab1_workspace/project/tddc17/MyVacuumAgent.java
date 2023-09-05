@@ -102,10 +102,11 @@ class MyAgentProgram implements AgentProgram {
 	// Here you can define your variables!
 	public int iterationCounter = 100;
 	public MyAgentState state = new MyAgentState();
-	
+
 	//********************************************************************
 	//Own variables
 	private int sequenceNumber = 0;
+	private int snakeTurnNr = 0;
 
 	// moves the Agent to a random start position
 	// uses percepts to update the Agent position - only the position, other percepts are ignored
@@ -128,179 +129,194 @@ class MyAgentProgram implements AgentProgram {
 		state.agent_last_action=state.ACTION_MOVE_FORWARD;
 		return LIUVacuumEnvironment.ACTION_MOVE_FORWARD;
 	}
-	
+
 	// *******************************************************************************************
 	// OWN help functions
-			private int[] returnNeighbors(int xpos, int ypos,int orientation) {
-				int[] returnValue = {0,0,0,0};
-				if(orientation == MyAgentState.NORTH) {
-					returnValue[0] = state.world[xpos][ypos-1];
-					returnValue[1] = state.world[xpos+1][ypos];
-					returnValue[2] = state.world[xpos][ypos+1];
-					returnValue[3] = state.world[xpos-1][ypos];
-				}else if(orientation == MyAgentState.EAST){
-					returnValue[0] = state.world[xpos+1][ypos];
-					returnValue[1] = state.world[xpos][ypos-1];
-					returnValue[2] = state.world[xpos-1][ypos];
-					returnValue[3] = state.world[xpos][ypos+1];
-				}else if(orientation == MyAgentState.SOUTH){
-					returnValue[0] = state.world[xpos][ypos+1];
-					returnValue[1] = state.world[xpos-1][ypos];
-					returnValue[2] = state.world[xpos][ypos-1];
-					returnValue[3] = state.world[xpos+1][ypos];
-				}else if(orientation == MyAgentState.WEST){
-					returnValue[0] = state.world[xpos-1][ypos];
-					returnValue[1] = state.world[xpos][ypos+1];
-					returnValue[2] = state.world[xpos+1][ypos];
-					returnValue[3] = state.world[xpos][ypos-1];
+	private int[] returnNeighbors(int xpos, int ypos,int orientation) {
+		int[] returnValue = {0,0,0,0};
+		if(orientation == MyAgentState.NORTH) {
+			returnValue[0] = state.world[xpos][ypos-1];
+			returnValue[1] = state.world[xpos+1][ypos];
+			returnValue[2] = state.world[xpos][ypos+1];
+			returnValue[3] = state.world[xpos-1][ypos];
+		}else if(orientation == MyAgentState.EAST){
+			returnValue[0] = state.world[xpos+1][ypos];
+			returnValue[1] = state.world[xpos][ypos-1];
+			returnValue[2] = state.world[xpos-1][ypos];
+			returnValue[3] = state.world[xpos][ypos+1];
+		}else if(orientation == MyAgentState.SOUTH){
+			returnValue[0] = state.world[xpos][ypos+1];
+			returnValue[1] = state.world[xpos-1][ypos];
+			returnValue[2] = state.world[xpos][ypos-1];
+			returnValue[3] = state.world[xpos+1][ypos];
+		}else if(orientation == MyAgentState.WEST){
+			returnValue[0] = state.world[xpos-1][ypos];
+			returnValue[1] = state.world[xpos][ypos+1];
+			returnValue[2] = state.world[xpos+1][ypos];
+			returnValue[3] = state.world[xpos][ypos-1];
+		}
+
+		return returnValue;
+
+	}
+	private int[] returnNeighborsAbs(int xpos1, int ypos1) {
+		int[] returnValue = {0,0,0,0};
+
+		returnValue[0] = state.world[xpos1][ypos1+1];
+		returnValue[1] = state.world[xpos1+1][ypos1];
+		returnValue[2] = state.world[xpos1][ypos1-1];
+		returnValue[3] = state.world[xpos1-1][ypos1];
+
+		return returnValue;
+
+	}
+
+	private Action turnRight() {
+		state.agent_direction = ((state.agent_direction+1) % 4);
+		state.agent_last_action = state.ACTION_TURN_RIGHT;
+		return LIUVacuumEnvironment.ACTION_TURN_RIGHT;
+
+	}
+
+	private Action turnLeft() {
+		state.agent_direction = ((state.agent_direction+3) % 4);
+		state.agent_last_action = state.ACTION_TURN_LEFT;
+		return LIUVacuumEnvironment.ACTION_TURN_LEFT;
+	}
+
+	private Action goForward() {
+		state.agent_last_action=state.ACTION_MOVE_FORWARD;
+		return LIUVacuumEnvironment.ACTION_MOVE_FORWARD;
+	} 
+
+	private Action snake(Boolean bump) {
+		if(snakeTurnNr == 1) {
+			snakeTurnNr++;
+			return goForward();
+		}else if(snakeTurnNr == 2) {
+			snakeTurnNr++;
+			return turnRight();
+			}else if(bump) {
+				snakeTurnNr++;
+				return turnRight();
+			}else {
+				snakeTurnNr=0;
+				return goForward();
+			}
+		}
+
+		private Action startupSeq(Boolean bump, Boolean home) {
+			if(home) {
+				sequenceNumber++;
+				state.agent_last_action=state.ACTION_NONE;
+				return goForward();
+			}
+			else if(bump) {
+				return turnRight();
+			}else {
+				return goForward();
+			}
+
+		}
+
+		private Action cleaningSeq(Boolean bump) {
+			return snake(bump);
+		}
+
+		private Action returnHomeSeq() {
+			return goForward();
+		}
+
+
+		@Override
+		public Action execute(Percept percept) {
+
+			// DO NOT REMOVE this if condition!!!
+			if (initnialRandomActions>0) {
+				return moveToRandomStartPosition((DynamicPercept) percept);
+			} else if (initnialRandomActions==0) {
+				// process percept for the last step of the initial random actions
+				initnialRandomActions--;
+				state.updatePosition((DynamicPercept) percept);
+				System.out.println("Processing percepts after the last execution of moveToRandomStartPosition()");
+				state.agent_last_action=state.ACTION_SUCK;
+				return LIUVacuumEnvironment.ACTION_SUCK;
+			}
+
+			// This example agent program will update the internal agent state while only moving forward.
+			// START HERE - code below should be modified!
+			//*********************************************************************
+			//Back to boilerplate
+
+			System.out.println("x=" + state.agent_x_position);
+			System.out.println("y=" + state.agent_y_position);
+			System.out.println("dir=" + state.agent_direction);
+
+
+			iterationCounter--;
+
+			if (iterationCounter==0)
+				return NoOpAction.NO_OP;
+
+			DynamicPercept p = (DynamicPercept) percept;
+			Boolean bump = (Boolean)p.getAttribute("bump");
+			Boolean dirt = (Boolean)p.getAttribute("dirt");
+			Boolean home = (Boolean)p.getAttribute("home");
+			System.out.println("percept: " + p);
+
+			// State update based on the percept value and the last action
+			state.updatePosition((DynamicPercept)percept);
+			if (bump) {
+				switch (state.agent_direction) {
+				case MyAgentState.NORTH:
+					state.updateWorld(state.agent_x_position,state.agent_y_position-1,state.WALL);
+					break;
+				case MyAgentState.EAST:
+					state.updateWorld(state.agent_x_position+1,state.agent_y_position,state.WALL);
+					break;
+				case MyAgentState.SOUTH:
+					state.updateWorld(state.agent_x_position,state.agent_y_position+1,state.WALL);
+					break;
+				case MyAgentState.WEST:
+					state.updateWorld(state.agent_x_position-1,state.agent_y_position,state.WALL);
+					break;
 				}
-
-				return returnValue;
-
 			}
-			private int[] returnNeighborsAbs(int xpos1, int ypos1) {
-				int[] returnValue = {0,0,0,0};
+			if (dirt)
+				state.updateWorld(state.agent_x_position,state.agent_y_position,state.DIRT);
+			else
+				state.updateWorld(state.agent_x_position,state.agent_y_position,state.CLEAR);
 
-				returnValue[0] = state.world[xpos1][ypos1+1];
-				returnValue[1] = state.world[xpos1+1][ypos1];
-				returnValue[2] = state.world[xpos1][ypos1-1];
-				returnValue[3] = state.world[xpos1-1][ypos1];
+			state.printWorldDebug();
 
-				return returnValue;
 
-			}
-
-			private Action turnRight() {
-				state.agent_direction = ((state.agent_direction+1) % 4);
-				state.agent_last_action = state.ACTION_TURN_RIGHT;
-				return LIUVacuumEnvironment.ACTION_TURN_RIGHT;
-
-			}
-
-			private Action turnLeft() {
-				state.agent_direction = ((state.agent_direction+3) % 4);
-				state.agent_last_action = state.ACTION_TURN_LEFT;
-				return LIUVacuumEnvironment.ACTION_TURN_LEFT;
-			}
-
-			private Action goForward() {
-				state.agent_last_action=state.ACTION_MOVE_FORWARD;
-				return LIUVacuumEnvironment.ACTION_MOVE_FORWARD;
+			// Next action selection based on the percept value
+			//***********************************************************
+			//Own movments
+			if (dirt)
+			{
+				System.out.println("DIRT -> choosing SUCK action!");
+				state.agent_last_action=state.ACTION_SUCK;
+				return LIUVacuumEnvironment.ACTION_SUCK;
 			} 
-			
-			private Action startupSeq(Boolean bump) {
-				if(returnNeighbors(state.agent_x_position,state.agent_y_position,state.agent_direction)[0] == state.CLEAR) {
-					sequenceNumber++;
+			else
+			{
+				if(sequenceNumber == 0) {
+					return startupSeq(bump, home);
+				}else if(sequenceNumber == 1) {
+					return cleaningSeq(bump);
+				}else if(sequenceNumber == 2) {
+					return returnHomeSeq();
+				}else {
 					state.agent_last_action=state.ACTION_NONE;
-					System.out.println("KASDKASDKJASDKJASDHKJASDKJDHASK");
 					return NoOpAction.NO_OP;
 				}
-				else if(bump) {
-					return turnRight();
-				}else {
-					return goForward();
-				}
-				
-			}
-			
-			private Action cleaningSeq() {
-				return goForward();
-			}
-			
-			private Action returnHomeSeq() {
-				return goForward();
-			}
-	
-
-	@Override
-	public Action execute(Percept percept) {
-
-		// DO NOT REMOVE this if condition!!!
-		if (initnialRandomActions>0) {
-			return moveToRandomStartPosition((DynamicPercept) percept);
-		} else if (initnialRandomActions==0) {
-			// process percept for the last step of the initial random actions
-			initnialRandomActions--;
-			state.updatePosition((DynamicPercept) percept);
-			System.out.println("Processing percepts after the last execution of moveToRandomStartPosition()");
-			state.agent_last_action=state.ACTION_SUCK;
-			return LIUVacuumEnvironment.ACTION_SUCK;
-		}
-
-		// This example agent program will update the internal agent state while only moving forward.
-		// START HERE - code below should be modified!
-		//*********************************************************************
-		//Back to boilerplate
-
-		System.out.println("x=" + state.agent_x_position);
-		System.out.println("y=" + state.agent_y_position);
-		System.out.println("dir=" + state.agent_direction);
-
-
-		iterationCounter--;
-
-		if (iterationCounter==0)
-			return NoOpAction.NO_OP;
-
-		DynamicPercept p = (DynamicPercept) percept;
-		Boolean bump = (Boolean)p.getAttribute("bump");
-		Boolean dirt = (Boolean)p.getAttribute("dirt");
-		Boolean home = (Boolean)p.getAttribute("home");
-		System.out.println("percept: " + p);
-
-		// State update based on the percept value and the last action
-		state.updatePosition((DynamicPercept)percept);
-		if (bump) {
-			switch (state.agent_direction) {
-			case MyAgentState.NORTH:
-				state.updateWorld(state.agent_x_position,state.agent_y_position-1,state.WALL);
-				break;
-			case MyAgentState.EAST:
-				state.updateWorld(state.agent_x_position+1,state.agent_y_position,state.WALL);
-				break;
-			case MyAgentState.SOUTH:
-				state.updateWorld(state.agent_x_position,state.agent_y_position+1,state.WALL);
-				break;
-			case MyAgentState.WEST:
-				state.updateWorld(state.agent_x_position-1,state.agent_y_position,state.WALL);
-				break;
-			}
-		}
-		if (dirt)
-			state.updateWorld(state.agent_x_position,state.agent_y_position,state.DIRT);
-		else
-			state.updateWorld(state.agent_x_position,state.agent_y_position,state.CLEAR);
-
-		state.printWorldDebug();
-
-
-		// Next action selection based on the percept value
-		//***********************************************************
-		//Own movments
-		if (dirt)
-		{
-			System.out.println("DIRT -> choosing SUCK action!");
-			state.agent_last_action=state.ACTION_SUCK;
-			return LIUVacuumEnvironment.ACTION_SUCK;
-		} 
-		else
-		{
-			if(sequenceNumber == 0) {
-				return startupSeq(bump);
-			}else if(sequenceNumber == 1) {
-				return cleaningSeq();
-			}else if(sequenceNumber == 2) {
-				return returnHomeSeq();
-			}else {
-				state.agent_last_action=state.ACTION_NONE;
-				return NoOpAction.NO_OP;
 			}
 		}
 	}
-}
 
-public class MyVacuumAgent extends AbstractAgent {
-	public MyVacuumAgent() {
-		super(new MyAgentProgram());
+	public class MyVacuumAgent extends AbstractAgent {
+		public MyVacuumAgent() {
+			super(new MyAgentProgram());
+		}
 	}
-}
