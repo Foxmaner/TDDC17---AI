@@ -5,3 +5,11 @@
 /RandomVacuumAgent.class
 /ReactiveVacuumAgent$1.class
 /ReactiveVacuumAgent.class
+/MyAgentState$pos.class
+/MyAgentState$Pos.class
+/MyAgentState$MyAgentProgram.class
+/MyAgentState$MyVacuumAgent.class
+/Pos.class
+/Pos$MyAgentProgram.class
+/Pos$MyAgentState.class
+/Pos$MyVacuumAgent.class
