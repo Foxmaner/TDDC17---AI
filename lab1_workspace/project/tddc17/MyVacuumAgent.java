@@ -60,10 +60,10 @@ class MyAgentState
 
 	// Variabels for bfs
 	boolean finished = false;
-	ArrayList<Pos> route = new ArrayList<Pos>();
-	ArrayList<Pos> queued;
+	ArrayList<ArrayList<Pos>> queued;
 	ArrayList<Pos> visited;
-
+	ArrayList<Pos> route;
+	
 	MyAgentState()
 	{
 		for (int i=0; i < world.length; i++)
@@ -130,7 +130,7 @@ class MyAgentProgram implements AgentProgram {
 	private Random random_generator = new Random();
 
 	// Here you can define your variables!
-	public int iterationCounter = 1000;
+	public int iterationCounter = 300;
 	public MyAgentState state = new MyAgentState();
 
 	// moves the Agent to a random start position
@@ -190,73 +190,30 @@ class MyAgentProgram implements AgentProgram {
 		return LIUVacuumEnvironment.ACTION_MOVE_FORWARD;
 	} 
 
-	public void generateRoute() {
-		Pos position = new Pos(state.agent_x_position,state.agent_y_position);
-
-		Pos[] neighbors = getNeighborsAbs(position);
-
-		state.queued = new ArrayList<Pos>();
-		state.visited = new ArrayList<Pos>();
-
-		state.visited.add(position);
-
-		for(int i=0; i<=3; i++) {
-			neighbors[i].parent = position;
-
-			if (!(state.world[neighbors[i].x][neighbors[i].y] == state.WALL)) {
-				state.queued.add(neighbors[i]);
-			}
-		}
-
-		state.route = BFS(position);
-
-	}
-
 
 	public ArrayList BFS(Pos start_node) {
-		int search_state;
-		if (state.finished) {
-			search_state = state.HOME;
-		}
-		else {
-			search_state = state.UNKNOWN;
-		}
-
-		if (state.queued.isEmpty()) {
-			ArrayList<Pos> empty_path = new ArrayList<Pos>();
-			return empty_path;
-		}
-
-		Pos node = state.queued.get(0);
-		state.queued.remove(0);
-
-
-		if (state.world[node.x][node.y] == search_state) {
-			return getRouteToStart(node, start_node);
-		}
-
-		else if (state.world[node.x][node.y] == state.WALL) {
-			if (!visitedPos(node, state.visited)) {
-				state.visited.add(node);
+		state.queued = new ArrayList<ArrayList<Pos>>();
+		state.visited = new ArrayList<Pos>();
+		
+		while(!state.queued.isEmpty()){
+			ArrayList<Pos> path = state.queued.remove(0);
+			Pos pos = path.get(path.size()-1);
+			if (state.world[pos.x][pos.y] == state.UNKNOWN){
+				return path;
 			}
-			return BFS(start_node);
-		}
-
-		else {
-			if(!visitedPos(node, state.visited)) {
-				state.visited.add(node);
+			Pos[] neighbors = getNeighborsAbs(pos);
+			for(Pos neighbor: neighbors) {
+				if (!state.visited.contains(neighbor) && state.world[neighbor.x][neighbor.y] != state.WALL) {
+	                ArrayList<Pos> new_path = (ArrayList) path.clone();
+	                new_path.add(neighbor);
+	                state.queued.add(new_path);
+	                state.visited.add(neighbor);
+	            }		
+						
 			}
-			Pos[] neighbours = new Pos[4];
-			neighbours = getNeighborsAbs(node);
-			for (Pos neighbour : neighbours) {
-				if (!(state.world[neighbour.x][neighbour.y] == state.WALL) &&
-						!visitedPos(neighbour, state.visited) && !inQueue(neighbour, state.queued)) {
-					neighbour.parent = node;
-					state.queued.add(neighbour);
-				}
-			}
-			return BFS(start_node);
 		}
+		
+		return new ArrayList<>();
 	}
 
 	public ArrayList<Pos> getRouteToStart(Pos pos, Pos startPos){
@@ -290,7 +247,7 @@ class MyAgentProgram implements AgentProgram {
 
 	@Override
 	public Action execute(Percept percept) {
-		System.out.println(state.route.toString());
+		
 
 		// DO NOT REMOVE this if condition!!!
 		if (initnialRandomActions>0) {
@@ -362,7 +319,7 @@ class MyAgentProgram implements AgentProgram {
 		else
 		{
 			if(state.route.isEmpty()) {
-				generateRoute();
+				state.route = BFS(currentPosition);
 
 				if(state.route.isEmpty()) {
 					System.out.println("Done!");
@@ -373,7 +330,7 @@ class MyAgentProgram implements AgentProgram {
 						//If the agent is not in its home position set "go_home" to true
 						// and calculate the path back to the home position
 						state.finished = true;
-						generateRoute();
+						state.route = BFS(currentPosition);
 					}
 
 				}
