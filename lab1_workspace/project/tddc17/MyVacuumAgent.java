@@ -22,13 +22,15 @@ class Pos{
 	}
 
 	Pos offset(Pos sentPos){
-		return new Pos(this.x-sentPos.x,this.y-sentPos.y);
+		return new Pos(sentPos.x-this.x,sentPos.y-this.y);
 	}
 
 	@Override
 	public String toString() {
 		return "Pos [x=" + x + ", y=" + y + ", parent=" + parent + "]";
 	}
+	
+	
 
 
 }
@@ -60,10 +62,10 @@ class MyAgentState
 
 	// Variabels for bfs
 	boolean finished = false;
-	ArrayList<Pos> route = new ArrayList<Pos>();
-	ArrayList<Pos> queued;
+	ArrayList<ArrayList<Pos>> queued;
 	ArrayList<Pos> visited;
-
+	ArrayList<Pos> route = new ArrayList<Pos>();
+	
 	MyAgentState()
 	{
 		for (int i=0; i < world.length; i++)
@@ -126,11 +128,11 @@ class MyAgentState
 
 class MyAgentProgram implements AgentProgram {
 
-	private int initnialRandomActions = 10;
+	private int initnialRandomActions = 5;
 	private Random random_generator = new Random();
 
 	// Here you can define your variables!
-	public int iterationCounter = 1000;
+	public int iterationCounter = 400;
 	public MyAgentState state = new MyAgentState();
 
 	// moves the Agent to a random start position
@@ -161,12 +163,14 @@ class MyAgentProgram implements AgentProgram {
 
 		//North
 		neighbors[0]=(new Pos(pos.x,pos.y-1));
-		//East
-		neighbors[1]=(new Pos(pos.x+1,pos.y));
 		//South
-		neighbors[2]=(new Pos(pos.x,pos.y+1));
+		neighbors[1]=(new Pos(pos.x,pos.y+1));
+		
+		//East
+		neighbors[3]=(new Pos(pos.x+1,pos.y));
+		
 		//West
-		neighbors[3]=(new Pos(pos.x-1,pos.y));
+		neighbors[2]=(new Pos(pos.x-1,pos.y));
 
 		return neighbors;
 
@@ -190,73 +194,42 @@ class MyAgentProgram implements AgentProgram {
 		return LIUVacuumEnvironment.ACTION_MOVE_FORWARD;
 	} 
 
-	public void generateRoute() {
-		Pos position = new Pos(state.agent_x_position,state.agent_y_position);
-
-		Pos[] neighbors = getNeighborsAbs(position);
-
-		state.queued = new ArrayList<Pos>();
-		state.visited = new ArrayList<Pos>();
-
-		state.visited.add(position);
-
-		for(int i=0; i<=3; i++) {
-			neighbors[i].parent = position;
-
-			if (!(state.world[neighbors[i].x][neighbors[i].y] == state.WALL)) {
-				state.queued.add(neighbors[i]);
-			}
-		}
-
-		state.route = BFS(position);
-
-	}
-
 
 	public ArrayList BFS(Pos start_node) {
-		int search_state;
-		if (state.finished) {
-			search_state = state.HOME;
-		}
-		else {
-			search_state = state.UNKNOWN;
-		}
-
-		if (state.queued.isEmpty()) {
-			ArrayList<Pos> empty_path = new ArrayList<Pos>();
-			return empty_path;
-		}
-
-		Pos node = state.queued.get(0);
-		state.queued.remove(0);
-
-
-		if (state.world[node.x][node.y] == search_state) {
-			return getRouteToStart(node, start_node);
-		}
-
-		else if (state.world[node.x][node.y] == state.WALL) {
-			if (!visitedPos(node, state.visited)) {
-				state.visited.add(node);
+		System.out.println("start_node:" + start_node);
+		ArrayList<ArrayList<Pos>> queued = new ArrayList<ArrayList<Pos>>();
+		ArrayList temp = new ArrayList<Pos>();
+		temp.add(new Pos(start_node.x,start_node.y));
+		queued.add(temp);
+		
+		boolean[][] visited = new boolean[state.world.length][state.world[0].length];
+		
+		while(!queued.isEmpty()){
+			ArrayList<Pos> path = queued.remove(0);
+			Pos pos = path.get(path.size()-1);
+			System.out.println("SEEEE MEEEE!!!!!" + pos);
+			if (state.world[pos.x][pos.y] == state.UNKNOWN || (state.finished == true && state.world[pos.x][pos.y] == state.HOME)){
+				path.remove(0);
+				System.out.println("path in bfs" + path);
+				return path;
 			}
-			return BFS(start_node);
-		}
-
-		else {
-			if(!visitedPos(node, state.visited)) {
-				state.visited.add(node);
+			Pos[] neighbors = getNeighborsAbs(pos);
+			for(Pos neighbor: neighbors) {
+				if (visited[neighbor.x][neighbor.y] == false && state.world[neighbor.x][neighbor.y] != state.WALL && isValidPosition(neighbor)) {
+	                ArrayList<Pos> new_path = new ArrayList<>(path);
+	                new_path.add(neighbor);
+	                queued.add(new_path);
+	                visited[neighbor.x][neighbor.y] = true;
+	            }		
+						
 			}
-			Pos[] neighbours = new Pos[4];
-			neighbours = getNeighborsAbs(node);
-			for (Pos neighbour : neighbours) {
-				if (!(state.world[neighbour.x][neighbour.y] == state.WALL) &&
-						!visitedPos(neighbour, state.visited) && !inQueue(neighbour, state.queued)) {
-					neighbour.parent = node;
-					state.queued.add(neighbour);
-				}
-			}
-			return BFS(start_node);
 		}
+		
+		return new ArrayList<>();
+	}
+	
+	private boolean isValidPosition(Pos pos) {
+	    return pos.x >= 0 && pos.x < state.world.length - 1 && pos.y >= 0 && pos.y < state.world[0].length - 1;
 	}
 
 	public ArrayList<Pos> getRouteToStart(Pos pos, Pos startPos){
@@ -290,7 +263,7 @@ class MyAgentProgram implements AgentProgram {
 
 	@Override
 	public Action execute(Percept percept) {
-		System.out.println(state.route.toString());
+		
 
 		// DO NOT REMOVE this if condition!!!
 		if (initnialRandomActions>0) {
@@ -307,12 +280,13 @@ class MyAgentProgram implements AgentProgram {
 		// This example agent program will update the internal agent state while only moving forward.
 		// START HERE - code below should be modified!
 
-		Pos currentPosition = new Pos(state.agent_x_position,state.agent_y_position);
+		
 
 
 		System.out.println("x=" + state.agent_x_position);
 		System.out.println("y=" + state.agent_y_position);
 		System.out.println("dir=" + state.agent_direction);
+		
 
 
 		iterationCounter--;
@@ -327,7 +301,8 @@ class MyAgentProgram implements AgentProgram {
 		System.out.println("percept: " + p);
 
 		// State update based on the percept value and the last action
-		state.updatePosition((DynamicPercept)percept);
+		state.updatePosition(p);
+		Pos currentPosition = new Pos(state.agent_x_position,state.agent_y_position);
 		if (bump) {
 			switch (state.agent_direction) {
 			case MyAgentState.NORTH:
@@ -346,12 +321,14 @@ class MyAgentProgram implements AgentProgram {
 		}
 		if (dirt)
 			state.updateWorld(state.agent_x_position,state.agent_y_position,state.DIRT);
+		else if (home)
+			state.updateWorld(state.agent_x_position,state.agent_y_position,state.HOME);
 		else
 			state.updateWorld(state.agent_x_position,state.agent_y_position,state.CLEAR);
 
 		state.printWorldDebug();
 
-
+		
 		// Next action selection based on the percept value
 		if (dirt)
 		{
@@ -361,68 +338,75 @@ class MyAgentProgram implements AgentProgram {
 		} 
 		else
 		{
+			
 			if(state.route.isEmpty()) {
-				generateRoute();
+				
+				state.route = BFS(new Pos(state.agent_x_position,state.agent_y_position));
 
 				if(state.route.isEmpty()) {
 					System.out.println("Done!");
 					if(state.world[currentPosition.x][currentPosition.y] == state.HOME) {
+						System.out.println("Im kinda done here!!!");
 						return NoOpAction.NO_OP;
 					}
 					else {
 						//If the agent is not in its home position set "go_home" to true
 						// and calculate the path back to the home position
+						System.out.println("Going hooome!!!");
 						state.finished = true;
-						generateRoute();
+						state.route = BFS(new Pos(state.agent_x_position,state.agent_y_position));;
 					}
 
+				}
+			}
+		
+			
+			Pos nextStep = state.route.get(0);
+			
+			Pos dir = currentPosition.offset(nextStep);
+			//Pos dir = currentPosition.offset(nextStep);
+			System.out.println("CurrentPosition:"  + currentPosition);
+			System.out.println("Direction:"  + dir);
+			System.out.println("NextPos:" + nextStep);
+			System.out.println("Path:" + state.route);
+			if(dir.y==-1) {
+				//North
+				if(state.agent_direction==state.NORTH) {
+					state.route.remove(0);
+					return goForward();
+				}else {
+					return turnRight();
+				}
+			}else if(dir.x==1) {
+				//East
+				if(state.agent_direction==state.EAST) {
+					state.route.remove(0);
+					return goForward();
+				}else {
+					return turnRight();
+				}
+			}else if(dir.y==1) {
+				//South
+				if(state.agent_direction==state.SOUTH) {
+					state.route.remove(0);
+					return goForward();
+				}else {
+					return turnRight();
+				}
+			}else if(dir.x==-1) {
+				//West
+				if(state.agent_direction==state.WEST) {
+					state.route.remove(0);
+					return goForward();
+				}else {
+					return turnRight();
 				}
 			}else {
-				Pos nextStep = state.route.get(0);
-
-				Pos dir = nextStep.offset(currentPosition);
-				System.out.println("Hello"  + dir);
-				System.out.println("nextpos" + nextStep);
-				System.out.println("Path" + state.route);
-				if(dir.y==-1) {
-					//North
-					if(state.agent_direction==state.NORTH) {
-						state.route.remove(0);
-						return goForward();
-					}else {
-						return turnRight();
-					}
-				}else if(dir.x==1) {
-					//East
-					if(state.agent_direction==state.EAST) {
-						state.route.remove(0);
-						return goForward();
-					}else {
-						return turnRight();
-					}
-				}else if(dir.y==1) {
-					//South
-					if(state.agent_direction==state.SOUTH) {
-						state.route.remove(0);
-						return goForward();
-					}else {
-						return turnRight();
-					}
-				}else if(dir.x==-1) {
-					//West
-					if(state.agent_direction==state.WEST) {
-						state.route.remove(0);
-						return goForward();
-					}else {
-						return turnRight();
-					}
-				}else {
-					System.out.println("I dont know how to help you man.....");
-
-				}
-
+				System.out.println("I dont know how to help you man.....");
 
 			}
+
+
 		}
 		return goForward();
 	}
