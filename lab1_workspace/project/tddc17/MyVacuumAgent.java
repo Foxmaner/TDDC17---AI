@@ -175,7 +175,7 @@ class MyAgentProgram implements AgentProgram {
 		return neighbors;
 
 	}
-
+	//Functions to turn and move vacuum forward
 	private Action turnRight() {
 		state.agent_direction = ((state.agent_direction+1) % 4);
 		state.agent_last_action = state.ACTION_TURN_RIGHT;
@@ -188,31 +188,40 @@ class MyAgentProgram implements AgentProgram {
 		state.agent_last_action = state.ACTION_TURN_LEFT;
 		return LIUVacuumEnvironment.ACTION_TURN_LEFT;
 	}
-
+	
 	private Action goForward() {
 		state.agent_last_action=state.ACTION_MOVE_FORWARD;
 		return LIUVacuumEnvironment.ACTION_MOVE_FORWARD;
 	} 
 
-
-	public ArrayList BFS(Pos start_node) {
-		System.out.println("start_node:" + start_node);
+	//Search for new paths with BFS
+	public ArrayList BFS(Pos startPos) {
+		System.out.println("start_node:" + startPos);
+		
+		//Creates a arraylist of arraylists of pos
+		//Then add a arraylist with only the start position
 		ArrayList<ArrayList<Pos>> queued = new ArrayList<ArrayList<Pos>>();
 		ArrayList temp = new ArrayList<Pos>();
-		temp.add(new Pos(start_node.x,start_node.y));
+		temp.add(new Pos(startPos.x,startPos.y));
 		queued.add(temp);
 		
+		//A map of visited nodes
 		boolean[][] visited = new boolean[state.world.length][state.world[0].length];
 		
+		//Cont as long as there is more to be explored
 		while(!queued.isEmpty()){
+			//Take first element
 			ArrayList<Pos> path = queued.remove(0);
 			Pos pos = path.get(path.size()-1);
 			System.out.println("SEEEE MEEEE!!!!!" + pos);
+			//If we find a pos which is unknown when cleaning
+			//Or home when done cleaning. Return the path as we wanna explore that place
 			if (state.world[pos.x][pos.y] == state.UNKNOWN || (state.finished == true && state.world[pos.x][pos.y] == state.HOME)){
 				path.remove(0);
 				System.out.println("path in bfs" + path);
 				return path;
 			}
+			//Go through all neighbors and add all neighbors that is not visited/wall/invalid position, to a new queue.
 			Pos[] neighbors = getNeighborsAbs(pos);
 			for(Pos neighbor: neighbors) {
 				if (visited[neighbor.x][neighbor.y] == false && state.world[neighbor.x][neighbor.y] != state.WALL && isValidPosition(neighbor)) {
@@ -224,14 +233,16 @@ class MyAgentProgram implements AgentProgram {
 						
 			}
 		}
-		
+		//Return empty list
 		return new ArrayList<>();
 	}
 	
+	//See if the pos is within the map
 	private boolean isValidPosition(Pos pos) {
 	    return pos.x >= 0 && pos.x < state.world.length - 1 && pos.y >= 0 && pos.y < state.world[0].length - 1;
 	}
-
+	
+	//Returns a route to start
 	public ArrayList<Pos> getRouteToStart(Pos pos, Pos startPos){
 		ArrayList<Pos> path = new ArrayList<Pos>();
 		while(pos != startPos){
@@ -240,7 +251,8 @@ class MyAgentProgram implements AgentProgram {
 		}
 		return path;
 	}
-
+	
+	//return true if pos is in queue
 	public Boolean inQueue(Pos pos, ArrayList<Pos> queue){
 		for (Pos queuePos: queue) {
 			if (pos.x == queuePos.x && pos.y == queuePos.y) {
@@ -250,7 +262,7 @@ class MyAgentProgram implements AgentProgram {
 		return false;
 	}
 
-
+	//Returns true if pos is in visited
 	public Boolean visitedPos(Pos pos, ArrayList<Pos> visited){
 		for (Pos posVisited : visited){
 			if (pos.x == posVisited.x && pos.y == posVisited.y)
@@ -338,11 +350,12 @@ class MyAgentProgram implements AgentProgram {
 		} 
 		else
 		{
-			
+			//Checks if route is empty
 			if(state.route.isEmpty()) {
-				
+				//If empty, try to find a new route
 				state.route = BFS(new Pos(state.agent_x_position,state.agent_y_position));
-
+				
+				//If still empty, there are more new unexplored. So return home
 				if(state.route.isEmpty()) {
 					System.out.println("Done!");
 					if(state.world[currentPosition.x][currentPosition.y] == state.HOME) {
@@ -360,15 +373,20 @@ class MyAgentProgram implements AgentProgram {
 				}
 			}
 		
-			
+			//If there is a route
+			//Get the next tile
 			Pos nextStep = state.route.get(0);
 			
+			//Find the offset from current tile to next tile
 			Pos dir = currentPosition.offset(nextStep);
 			//Pos dir = currentPosition.offset(nextStep);
 			System.out.println("CurrentPosition:"  + currentPosition);
 			System.out.println("Direction:"  + dir);
 			System.out.println("NextPos:" + nextStep);
 			System.out.println("Path:" + state.route);
+			
+			//Depending on the offset, we go up/down/right/left
+			//Rotate right until we are pointed towards the next tile. Then go forward
 			if(dir.y==-1) {
 				//North
 				if(state.agent_direction==state.NORTH) {
@@ -402,12 +420,14 @@ class MyAgentProgram implements AgentProgram {
 					return turnRight();
 				}
 			}else {
+				//We should never end up here
 				System.out.println("I dont know how to help you man.....");
 
 			}
 
 
 		}
+		//We should never end up here
 		return goForward();
 	}
 }
