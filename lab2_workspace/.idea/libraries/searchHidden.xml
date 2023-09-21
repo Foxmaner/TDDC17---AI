@@ -1,0 +1,9 @@
+<component name="libraryTable">
+  <library name="searchHidden">
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/lab2_part1/lib/searchHidden.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>

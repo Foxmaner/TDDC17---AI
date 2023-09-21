@@ -1,0 +1,9 @@
+<component name="libraryTable">
+  <library name="appengine-sdk-proxy">
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/.metadata/.plugins/com.google.appengine.eclipse.core/appengine-sdk-proxy.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>

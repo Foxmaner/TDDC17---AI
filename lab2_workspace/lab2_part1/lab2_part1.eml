@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component jdk="17" jdk_type="JavaSDK">
+	<exclude-output/>
+	<contentEntry url="file://$MODULE_DIR$"/>
+	<lib name="searchHidden.jar" scope="COMPILE">
+		<relative-module-cls project-related="jar://$PROJECT_DIR$/lab2_workspace/lab2_part1/lib/searchHidden.jar!/"/>
+	</lib>
+</component>
