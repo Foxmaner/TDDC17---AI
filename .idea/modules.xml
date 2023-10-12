@@ -2,11 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/lab1_workspace/lab1_workspace.iml" filepath="$PROJECT_DIR$/lab1_workspace/lab1_workspace.iml" />
-      <module fileurl="file://$PROJECT_DIR$/lab2_workspace/lab2_part1/lab2_part1.iml" filepath="$PROJECT_DIR$/lab2_workspace/lab2_part1/lab2_part1.iml" />
-      <module fileurl="file://$PROJECT_DIR$/lab2_workspace/lab2_workspace.iml" filepath="$PROJECT_DIR$/lab2_workspace/lab2_workspace.iml" />
-      <module fileurl="file://$PROJECT_DIR$/lab1_workspace/project/project.iml" filepath="$PROJECT_DIR$/lab1_workspace/project/project.iml" />
-      <module fileurl="file://$PROJECT_DIR$/tddc17.iml" filepath="$PROJECT_DIR$/tddc17.iml" />
+      <module fileurl="file://$PROJECT_DIR$/rl_workspace/QLearning/QLearning.iml" filepath="$PROJECT_DIR$/rl_workspace/QLearning/QLearning.iml" />
     </modules>
   </component>
 </project>
