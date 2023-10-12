@@ -104,7 +104,6 @@ public class QLearningController extends Controller {
 	void performAction(int action) {
 		/* Fire zeh rockets! */
 		/* TODO: Remember to change NUM_ACTIONS constant to reflect the number of actions (including 0, no action) */
-		
 		/* TODO: IMPLEMENT THIS FUNCTION */
 		switch(action) {
 		case 0:
@@ -155,12 +154,14 @@ public class QLearningController extends Controller {
 				/* Update Q value */
 				if (Qtable.get(prev_stateaction) == null) {
 					Qtable.put(prev_stateaction, 0.0);
+				}else {
+					/* TODO: IMPLEMENT Q-UPDATE HERE! */
+					double value = Qtable.get(prev_stateaction) + alpha(Ntable.get(prev_stateaction))*(previous_reward + GAMMA_DISCOUNT_FACTOR *getMaxActionQValue(new_state) - Qtable.get(prev_stateaction));
+					/* See top for constants and below for helper functions */
+					Qtable.put(prev_stateaction, value);
 				} 
 
 				
-				/* TODO: IMPLEMENT Q-UPDATE HERE! */
-				
-				/* See top for constants and below for helper functions */
 				
 				
 				int action = selectAction(new_state); /* Make sure you understand how it selects an action */
