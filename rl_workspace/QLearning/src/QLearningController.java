@@ -77,24 +77,28 @@ public class QLearningController extends Controller {
 	
 	/* Go up */
 	void goUp() {
+		
 		leftEngine.setBursting(false);
 		rightEngine.setBursting(false);
 		middleEngine.setBursting(true);
 	}
 	/* Turn left */
 	void turnLeft() {
+		
 		leftEngine.setBursting(false);
 		rightEngine.setBursting(true);
 		middleEngine.setBursting(false);
 	}
 	/* Turn right */
 	void turnRight() {
+		
 		leftEngine.setBursting(true);
 		rightEngine.setBursting(false);
 		middleEngine.setBursting(false);
 	}
 	/* Turn off all rockets */
 	void resetRockets() {
+		
 		leftEngine.setBursting(false);
 		rightEngine.setBursting(false);
 		middleEngine.setBursting(false);
@@ -119,7 +123,7 @@ public class QLearningController extends Controller {
 			turnLeft();
 		default: 
 			//Do nothing
-			resetRockets();
+			
 		
 		}
 		
