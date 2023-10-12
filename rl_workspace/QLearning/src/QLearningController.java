@@ -75,6 +75,24 @@ public class QLearningController extends Controller {
 	}
 
 	
+	/* Go up */
+	void goUp() {
+		leftEngine.setBursting(false);
+		rightEngine.setBursting(false);
+		middleEngine.setBursting(true);
+	}
+	/* Turn left */
+	void turnLeft() {
+		leftEngine.setBursting(false);
+		rightEngine.setBursting(true);
+		middleEngine.setBursting(false);
+	}
+	/* Turn right */
+	void turnRight() {
+		leftEngine.setBursting(true);
+		rightEngine.setBursting(false);
+		middleEngine.setBursting(false);
+	}
 	/* Turn off all rockets */
 	void resetRockets() {
 		leftEngine.setBursting(false);
@@ -84,11 +102,27 @@ public class QLearningController extends Controller {
 
 	/* Performs the chosen action */
 	void performAction(int action) {
-
 		/* Fire zeh rockets! */
 		/* TODO: Remember to change NUM_ACTIONS constant to reflect the number of actions (including 0, no action) */
 		
 		/* TODO: IMPLEMENT THIS FUNCTION */
+		switch(action) {
+		case 0:
+			//Do nothing
+			resetRockets();
+		case 1:
+			goUp();
+		case 2:
+			//Turn right
+			turnRight();
+		case 3:
+			//Turn left
+			turnLeft();
+		default:
+			//Do nothing
+			resetRockets();
+		
+		}
 		
 	}
 
