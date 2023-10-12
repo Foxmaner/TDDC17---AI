@@ -113,17 +113,21 @@ public class QLearningController extends Controller {
 		case 0:
 			//Do nothing
 			resetRockets();
+			break;
 		case 1:
 			goUp();
+			break;
 		case 2:
 			//Turn right
 			turnRight();
+			break;
 		case 3:
 			//Turn left
 			turnLeft();
+			break;
 		default: 
 			//Do nothing
-			
+			break;
 		
 		}
 		
