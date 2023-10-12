@@ -5,8 +5,22 @@ public class StateAndReward {
 	public static String getStateAngle(double angle, double vx, double vy) {
 
 		/* TODO: IMPLEMENT THIS FUNCTION */
-
+		//0-1.5
 		String state = "OneStateToRuleThemAll";
+		//Pointing left
+		if(angle < -0.05 && angle > -1.5) {
+			state = "A";
+		}else if(angle > 0.05 && angle < 1.5) {
+			//Pointing right
+			state = "B";
+		}else if(angle <= 0.05 && angle >= -0.05) {
+			//Pointing mostly up
+			state = "G";
+		}else {
+			//Pointing down
+			state = "D";
+		}
+		
 		
 		return state;
 	}
@@ -17,7 +31,17 @@ public class StateAndReward {
 		/* TODO: IMPLEMENT THIS FUNCTION */
 		
 		double reward = 0;
-
+		String state = getStateAngle(angle, vx,vy);
+		
+		if(state == "A"){
+			reward = 5;
+		}else if(state == "B") {
+			reward = 5;
+		}else if(state == "G") {
+			reward = 10;
+		}else if(state == "D") {
+			reward = 0;
+		}
 		return reward;
 	}
 

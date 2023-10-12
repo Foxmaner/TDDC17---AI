@@ -44,6 +44,7 @@ public class TutorialController extends Controller {
     	System.out.println("VX: " + String.valueOf(vx.getValue()));
     	System.out.println("VY: " + String.valueOf(vy.getValue()));
     	
+    	
     	if(vy.getValue()>0) {
     		middleRocket.setBursting(true);
     	}else {
