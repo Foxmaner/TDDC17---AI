@@ -48,7 +48,7 @@ public class StateAndReward {
 	/* State discretization function for the full hover controller */
 	public static String getStateHover(double angle, double vx, double vy) {
 
-		int angleDiscrete = discretize2(angle, 8, -Math.PI / 4, Math.PI / 4);
+		int angleDiscrete = discretize2(angle, 7, -Math.PI / 4, Math.PI / 4);
 		int vxDiscrete	= discretize2(vx, 5, -1, 1);
 		int vyDiscrete = discretize2(vy, 5, -1, 1);
 
